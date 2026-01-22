@@ -1,48 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script>
-        (function() {
-            // Check where the user came from
-            var referrer = document.referrer.toLowerCase();
-            
-            // Allow if referrer contains telegram domains
-            // We check for t.me (short link), telegram.org, and web.telegram.org
-            var isFromTelegram = referrer.includes("t.me") || 
-                                 referrer.includes("telegram.org") || 
-                                 referrer.includes("web.telegram.org");
-
-            // If NOT from Telegram, show fake Server Error and destroy the page
-            if (!isFromTelegram) {
-                document.documentElement.innerHTML = `
-                    <html>
-                    <head>
-                        <title>500 Internal Server Error</title>
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <style>
-                            body { font-family: Arial, sans-serif; color: #333; text-align: center; padding-top: 50px; background-color: #fff; }
-                            h1 { font-size: 24px; color: #000; margin-bottom: 10px; }
-                            p { font-size: 14px; color: #666; }
-                            hr { width: 300px; border: 0; border-top: 1px solid #ccc; margin: 20px auto; }
-                        </style>
-                    </head>
-                    <body>
-                        <h1>500 Internal Server Error</h1>
-                        <p>The server encountered an internal error or misconfiguration and was unable to complete your request.</p>
-                        <p>Please contact the server administrator at webmaster@example.com to inform them of the time this error occurred.</p>
-                        <hr>
-                        <p><i>Apache/2.4.41 (Ubuntu) Server at friend-4ever.github.io Port 443</i></p>
-                    </body>
-                    </html>
-                `;
-                // Stop the rest of the page from processing
-                throw new Error("Access Denied: Direct access or non-Telegram referrer detected.");
-            }
-        })();
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ruma</title>
+    
+    <!-- Security Check Script -->
+    <script>
+        (function() {
+            // Telegram channel URL
+            const telegramChannel = "https://t.me/Premiereepro";
+            
+            // Check if request is coming from Telegram channel
+            function isFromTelegramChannel() {
+                const referrer = document.referrer;
+                
+                // Allow if referrer is from Telegram channel
+                if (referrer && referrer.includes(telegramChannel)) {
+                    return true;
+                }
+                
+                // Additional check for Telegram web
+                if (referrer && (referrer.includes("t.me/") || referrer.includes("telegram.me/"))) {
+                    // Check if it's from your specific channel
+                    // Telegram web might not show the full channel URL
+                    // You might need to adjust this based on actual referrer
+                    return true;
+                }
+                
+                // Check URL parameters for Telegram web app
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('from') === 'telegram') {
+                    return true;
+                }
+                
+                return false;
+            }
+            
+            // Show error page
+            function showErrorPage() {
+                document.body.innerHTML = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>404 Not Found</title>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                min-height: 100vh;
+                                margin: 0;
+                                padding: 20px;
+                            }
+                            .error-container {
+                                background: white;
+                                padding: 40px;
+                                border-radius: 10px;
+                                text-align: center;
+                                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                                max-width: 500px;
+                            }
+                            .error-code {
+                                font-size: 72px;
+                                font-weight: bold;
+                                color: #ff4757;
+                                margin: 0;
+                            }
+                            .error-title {
+                                font-size: 24px;
+                                color: #333;
+                                margin: 20px 0;
+                            }
+                            .error-message {
+                                color: #666;
+                                line-height: 1.6;
+                                margin-bottom: 30px;
+                            }
+                            .telegram-link {
+                                display: inline-block;
+                                background: #0088cc;
+                                color: white;
+                                padding: 12px 30px;
+                                border-radius: 50px;
+                                text-decoration: none;
+                                font-weight: bold;
+                                margin-top: 20px;
+                                transition: transform 0.3s ease;
+                            }
+                            .telegram-link:hover {
+                                transform: translateY(-2px);
+                            }
+                            .icon {
+                                font-size: 48px;
+                                margin-bottom: 20px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="error-container">
+                            <div class="icon">🔒</div>
+                            <h1 class="error-code">403</h1>
+                            <h2 class="error-title">Access Restricted</h2>
+                            <p class="error-message">
+                                This website is only accessible through the official Telegram channel.
+                                Please visit the link through the Telegram channel to access this content.
+                            </p>
+                            <a href="${telegramChannel}" class="telegram-link" target="_blank">
+                                Visit Telegram Channel
+                            </a>
+                            <p style="margin-top: 20px; color: #888; font-size: 14px;">
+                                Channel: @Premiereepro
+                            </p>
+                        </div>
+                    </body>
+                    </html>
+                `;
+                
+                // Prevent right-click and other actions
+                document.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+                
+                // Prevent keyboard shortcuts
+                document.addEventListener('keydown', function(e) {
+                    // Block F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+                    if (e.keyCode === 123 || 
+                        (e.ctrlKey && e.shiftKey && e.keyCode === 73) ||
+                        (e.ctrlKey && e.shiftKey && e.keyCode === 74) ||
+                        (e.ctrlKey && e.keyCode === 85)) {
+                        e.preventDefault();
+                        return false;
+                    }
+                });
+            }
+            
+            // Check on page load
+            window.addEventListener('DOMContentLoaded', function() {
+                if (!isFromTelegramChannel()) {
+                    // Check if it's the first load (not from back/forward)
+                    if (performance.navigation.type === 0 || performance.navigation.type === 1) {
+                        showErrorPage();
+                    }
+                }
+            });
+            
+            // Also check when page is shown (for back/forward navigation)
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted && !isFromTelegramChannel()) {
+                    showErrorPage();
+                }
+            });
+            
+        })();
+    </script>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -414,7 +529,8 @@
         <div class="content">
             <div class="shayari-container">
                 <div class="shayari-text" id="shayariText">
-                    </div>
+                    <!-- Shayari will be inserted by JavaScript -->
+                </div>
             </div>
         </div>
         
@@ -423,80 +539,99 @@
         </div>
     </div>
 
-
     <script>
-        // Create floating hearts
-        function createHearts() {
-            const heartsContainer = document.getElementById('hearts');
-            const heartCount = 25;
+        // Security: Additional check
+        function performSecurityCheck() {
+            const telegramChannel = "https://t.me/Premiereepro";
+            const referrer = document.referrer;
             
-            for (let i = 0; i < heartCount; i++) {
-                const heart = document.createElement('div');
-                heart.innerHTML = '<i class="fas fa-heart"></i>';
-                heart.classList.add('heart');
-                
-                // Random position
-                heart.style.left = Math.random() * 100 + '%';
-                heart.style.top = Math.random() * 100 + '%';
-                
-                // Random size
-                const size = Math.random() * 15 + 10;
-                heart.style.fontSize = size + 'px';
-                
-                // Random animation delay
-                heart.style.animationDelay = Math.random() * 5 + 's';
-                
-                heartsContainer.appendChild(heart);
+            // If no referrer or referrer doesn't match Telegram channel
+            if (!referrer || !referrer.includes(telegramChannel)) {
+                // Check if this is a direct access
+                if (performance.navigation.type === 0 || performance.navigation.type === 1) {
+                    // If accessed directly, show error
+                    window.location.href = "https://http.cat/403";
+                    return false;
+                }
             }
+            return true;
         }
         
-        // Create animated shayari text
-        function createShayari() {
-            const shayariText = document.getElementById('shayariText');
-            const shayari = [
-                "Khoobsurat sa ek lamha, kahaani ban gaya,",
-                "Na jaane kaise Ruma meri zindagi ki nishaani ban gaya,",
-                "Chaand si roshni lekar Ruma meri duniya mein aayi,",
-                "Uski muskaan sitaron ki mehfil sa ban gayi,",
-                "Aur yunhi, ek rishta bana jo kabhi toot na paaya…",
-                "Ruma, tumne reply nahi kiya,",
-                "Par mujhe iska bilkul gham nahi,",
-                "Balki khushi hai is baat ki,",
-                "Ki tum aise kisi ko bhi reply nahi karti…",
-                "Aur phir bhi, tum meri kahaani ka hissa ho gayi"
-            ];
+        // Only run the website code if security check passes
+        if (performSecurityCheck()) {
+            // Create floating hearts
+            function createHearts() {
+                const heartsContainer = document.getElementById('hearts');
+                const heartCount = 25;
+                
+                for (let i = 0; i < heartCount; i++) {
+                    const heart = document.createElement('div');
+                    heart.innerHTML = '<i class="fas fa-heart"></i>';
+                    heart.classList.add('heart');
+                    
+                    // Random position
+                    heart.style.left = Math.random() * 100 + '%';
+                    heart.style.top = Math.random() * 100 + '%';
+                    
+                    // Random size
+                    const size = Math.random() * 15 + 10;
+                    heart.style.fontSize = size + 'px';
+                    
+                    // Random animation delay
+                    heart.style.animationDelay = Math.random() * 5 + 's';
+                    
+                    heartsContainer.appendChild(heart);
+                }
+            }
             
-            shayari.forEach(line => {
-                const lineElem = document.createElement('div');
-                lineElem.classList.add('shayari-line');
+            // Create animated shayari text
+            function createShayari() {
+                const shayariText = document.getElementById('shayariText');
+                const shayari = [
+                    "Khoobsurat sa ek lamha, kahaani ban gaya,",
+                    "Na jaane kaise Ruma meri zindagi ki nishaani ban gaya,",
+                    "Chaand si roshni lekar Ruma meri duniya mein aayi,",
+                    "Uski muskaan sitaron ki mehfil sa ban gayi,",
+                    "Aur yunhi, ek rishta bana jo kabhi toot na paaya…",
+                    "Ruma, tumne reply nahi kiya,",
+                    "Par mujhe iska bilkul gham nahi,",
+                    "Balki khushi hai is baat ki,",
+                    "Ki tum aise kisi ko bhi reply nahi karti…",
+                    "Aur phir bhi, tum meri kahaani ka hissa ho gayi"
+                ];
                 
-                const words = line.split(' ');
-                words.forEach(word => {
-                    const wordElem = document.createElement('span');
-                    wordElem.classList.add('shayari-word');
+                shayari.forEach(line => {
+                    const lineElem = document.createElement('div');
+                    lineElem.classList.add('shayari-line');
                     
-                    // Add each character with animation
-                    for (let i = 0; i < word.length; i++) {
-                        const charElem = document.createElement('span');
-                        charElem.classList.add('shayari-char');
-                        charElem.textContent = word[i];
-                        wordElem.appendChild(charElem);
-                    }
+                    const words = line.split(' ');
+                    words.forEach(word => {
+                        const wordElem = document.createElement('span');
+                        wordElem.classList.add('shayari-word');
+                        
+                        // Add each character with animation
+                        for (let i = 0; i < word.length; i++) {
+                            const charElem = document.createElement('span');
+                            charElem.classList.add('shayari-char');
+                            charElem.textContent = word[i];
+                            wordElem.appendChild(charElem);
+                        }
+                        
+                        lineElem.appendChild(wordElem);
+                        // Add space after word
+                        lineElem.appendChild(document.createTextNode(' '));
+                    });
                     
-                    lineElem.appendChild(wordElem);
-                    // Add space after word
-                    lineElem.appendChild(document.createTextNode(' '));
+                    shayariText.appendChild(lineElem);
                 });
-                
-                shayariText.appendChild(lineElem);
-            });
+            }
+            
+            // Initialize everything when page loads
+            window.onload = function() {
+                createHearts();
+                createShayari();
+            };
         }
-        
-        // Initialize everything when page loads
-        window.onload = function() {
-            createHearts();
-            createShayari();
-        };
     </script>
 </body>
 </html>
