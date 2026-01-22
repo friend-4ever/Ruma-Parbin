@@ -5,32 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ruma</title>
     
-    <!-- Security Check Script -->
+    <!-- Telegram Channel Verification Script -->
     <script>
         (function() {
-            // Telegram channel URL
-            const telegramChannel = "https://t.me/Premiereepro";
+            // Your Telegram channel
+            const TELEGRAM_CHANNEL = "Premiereepro";
             
-            // Check if request is coming from Telegram channel
+            // Generate a secure token (you can change this)
+            const SECURE_TOKEN = "premiereepro_secure_" + new Date().getDate();
+            
+            // Function to check if coming from Telegram
             function isFromTelegramChannel() {
+                // Check URL parameters first (for Telegram web links)
+                const urlParams = new URLSearchParams(window.location.search);
+                const token = urlParams.get('token');
+                
+                // If correct token is in URL, allow access
+                if (token === SECURE_TOKEN) {
+                    return true;
+                }
+                
+                // Check referrer
                 const referrer = document.referrer;
                 
-                // Allow if referrer is from Telegram channel
-                if (referrer && referrer.includes(telegramChannel)) {
+                // Allow if referrer contains t.me or telegram.org
+                if (referrer && (referrer.includes('t.me') || referrer.includes('telegram.org'))) {
+                    // For extra security, you can check for specific channel patterns
                     return true;
                 }
                 
-                // Additional check for Telegram web
-                if (referrer && (referrer.includes("t.me/") || referrer.includes("telegram.me/"))) {
-                    // Check if it's from your specific channel
-                    // Telegram web might not show the full channel URL
-                    // You might need to adjust this based on actual referrer
+                // Check user agent for Telegram
+                const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+                if (/Telegram/i.test(userAgent)) {
                     return true;
                 }
                 
-                // Check URL parameters for Telegram web app
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('from') === 'telegram') {
+                // Check for Telegram Web App specific features
+                if (window.TelegramWebviewProxy || window.Telegram) {
+                    return true;
+                }
+                
+                // Additional Telegram checks
+                if (window.external && 'TelegramGameProxy' in window.external) {
                     return true;
                 }
                 
@@ -39,121 +55,204 @@
             
             // Show error page
             function showErrorPage() {
-                document.body.innerHTML = `
-                    <!DOCTYPE html>
-                    <html>
+                document.documentElement.innerHTML = `
                     <head>
-                        <title>404 Not Found</title>
+                        <title>Access Denied | 404 Error</title>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <style>
+                            * {
+                                margin: 0;
+                                padding: 0;
+                                box-sizing: border-box;
+                            }
+                            
                             body {
-                                font-family: Arial, sans-serif;
+                                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
                                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                                 display: flex;
                                 justify-content: center;
                                 align-items: center;
                                 min-height: 100vh;
-                                margin: 0;
                                 padding: 20px;
+                                color: #333;
                             }
+                            
                             .error-container {
                                 background: white;
-                                padding: 40px;
-                                border-radius: 10px;
+                                padding: 50px 40px;
+                                border-radius: 15px;
                                 text-align: center;
-                                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
                                 max-width: 500px;
+                                width: 100%;
+                                animation: fadeIn 0.5s ease-out;
                             }
-                            .error-code {
-                                font-size: 72px;
-                                font-weight: bold;
+                            
+                            @keyframes fadeIn {
+                                from { opacity: 0; transform: translateY(20px); }
+                                to { opacity: 1; transform: translateY(0); }
+                            }
+                            
+                            .lock-icon {
+                                font-size: 80px;
                                 color: #ff4757;
-                                margin: 0;
+                                margin-bottom: 20px;
+                                animation: bounce 2s infinite;
                             }
+                            
+                            @keyframes bounce {
+                                0%, 100% { transform: translateY(0); }
+                                50% { transform: translateY(-10px); }
+                            }
+                            
+                            .error-code {
+                                font-size: 48px;
+                                font-weight: 800;
+                                color: #ff4757;
+                                margin-bottom: 10px;
+                                font-family: monospace;
+                            }
+                            
                             .error-title {
                                 font-size: 24px;
-                                color: #333;
-                                margin: 20px 0;
+                                color: #2d3436;
+                                margin-bottom: 15px;
+                                font-weight: 600;
                             }
+                            
                             .error-message {
-                                color: #666;
+                                color: #636e72;
                                 line-height: 1.6;
                                 margin-bottom: 30px;
+                                font-size: 16px;
                             }
-                            .telegram-link {
-                                display: inline-block;
+                            
+                            .telegram-button {
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 10px;
                                 background: #0088cc;
                                 color: white;
-                                padding: 12px 30px;
+                                padding: 15px 30px;
                                 border-radius: 50px;
                                 text-decoration: none;
-                                font-weight: bold;
-                                margin-top: 20px;
-                                transition: transform 0.3s ease;
+                                font-weight: 600;
+                                font-size: 16px;
+                                transition: all 0.3s ease;
+                                box-shadow: 0 5px 15px rgba(0, 136, 204, 0.4);
+                                margin-top: 10px;
                             }
-                            .telegram-link:hover {
-                                transform: translateY(-2px);
+                            
+                            .telegram-button:hover {
+                                transform: translateY(-3px);
+                                box-shadow: 0 8px 20px rgba(0, 136, 204, 0.6);
+                                background: #0077b3;
                             }
-                            .icon {
-                                font-size: 48px;
-                                margin-bottom: 20px;
+                            
+                            .instructions {
+                                background: #f8f9fa;
+                                border-radius: 10px;
+                                padding: 15px;
+                                margin-top: 25px;
+                                border-left: 4px solid #0088cc;
+                            }
+                            
+                            .instructions h3 {
+                                color: #2d3436;
+                                margin-bottom: 10px;
+                                font-size: 16px;
+                            }
+                            
+                            .instructions ol {
+                                text-align: left;
+                                padding-left: 20px;
+                                color: #636e72;
+                                line-height: 1.6;
+                            }
+                            
+                            .channel-name {
+                                background: #ffeaa7;
+                                color: #d35400;
+                                padding: 5px 15px;
+                                border-radius: 20px;
+                                font-weight: 600;
+                                display: inline-block;
+                                margin: 10px 0;
+                            }
+                            
+                            .footer-note {
+                                margin-top: 25px;
+                                color: #888;
+                                font-size: 14px;
+                                border-top: 1px solid #eee;
+                                padding-top: 15px;
                             }
                         </style>
                     </head>
                     <body>
                         <div class="error-container">
-                            <div class="icon">🔒</div>
+                            <div class="lock-icon">🔒</div>
                             <h1 class="error-code">403</h1>
                             <h2 class="error-title">Access Restricted</h2>
                             <p class="error-message">
-                                This website is only accessible through the official Telegram channel.
-                                Please visit the link through the Telegram channel to access this content.
+                                This website is exclusively available through the official Telegram channel.
+                                Please access it via the link posted in the channel.
                             </p>
-                            <a href="${telegramChannel}" class="telegram-link" target="_blank">
-                                Visit Telegram Channel
+                            
+                            <div class="channel-name">@${TELEGRAM_CHANNEL}</div>
+                            
+                            <a href="https://t.me/${TELEGRAM_CHANNEL}" class="telegram-button" target="_blank">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.06-.2-.08-.06-.19-.04-.27-.02-.12.02-1.95 1.24-5.5 3.64-.52.35-1 .52-1.48.51-.49-.01-1.44-.28-2.15-.51-.86-.28-1.54-.43-1.48-.91.03-.25.37-.5 1-.76.79-.34 3.32-1.44 5.25-2.16 2.56-.97 3.09-1.14 3.44-1.15.73-.02 1.18.16 1.45.33.35.22.46.37.47.58.04.33-.23.5-.43.58z"/>
+                                </svg>
+                                Open Telegram Channel
                             </a>
-                            <p style="margin-top: 20px; color: #888; font-size: 14px;">
-                                Channel: @Premiereepro
-                            </p>
+                            
+                            <div class="instructions">
+                                <h3>How to Access:</h3>
+                                <ol>
+                                    <li>Open Telegram app</li>
+                                    <li>Search for <strong>@${TELEGRAM_CHANNEL}</strong></li>
+                                    <li>Find the website link in channel posts</li>
+                                    <li>Click the link to open website</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="footer-note">
+                                Access denied: This link must be opened from @${TELEGRAM_CHANNEL} only
+                            </div>
                         </div>
+                        
+                        <script>
+                            // Prevent any bypass attempts
+                            document.addEventListener('contextmenu', e => e.preventDefault());
+                            document.onkeydown = function(e) {
+                                if (e.keyCode == 123 || 
+                                    (e.ctrlKey && e.shiftKey && e.keyCode == 73) || 
+                                    (e.ctrlKey && e.shiftKey && e.keyCode == 74) || 
+                                    (e.ctrlKey && e.keyCode == 85)) {
+                                    return false;
+                                }
+                            };
+                            
+                            // Clear URL to hide any parameters
+                            history.replaceState(null, null, window.location.pathname);
+                        <\/script>
                     </body>
-                    </html>
                 `;
-                
-                // Prevent right-click and other actions
-                document.addEventListener('contextmenu', function(e) {
-                    e.preventDefault();
-                    return false;
-                });
-                
-                // Prevent keyboard shortcuts
-                document.addEventListener('keydown', function(e) {
-                    // Block F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
-                    if (e.keyCode === 123 || 
-                        (e.ctrlKey && e.shiftKey && e.keyCode === 73) ||
-                        (e.ctrlKey && e.shiftKey && e.keyCode === 74) ||
-                        (e.ctrlKey && e.keyCode === 85)) {
-                        e.preventDefault();
-                        return false;
-                    }
-                });
             }
             
             // Check on page load
-            window.addEventListener('DOMContentLoaded', function() {
-                if (!isFromTelegramChannel()) {
-                    // Check if it's the first load (not from back/forward)
-                    if (performance.navigation.type === 0 || performance.navigation.type === 1) {
-                        showErrorPage();
-                    }
-                }
-            });
-            
-            // Also check when page is shown (for back/forward navigation)
-            window.addEventListener('pageshow', function(event) {
-                if (event.persisted && !isFromTelegramChannel()) {
-                    showErrorPage();
-                }
-            });
+            if (!isFromTelegramChannel()) {
+                // If not from Telegram, show error immediately
+                showErrorPage();
+            } else {
+                // If from Telegram, add a success indicator to URL
+                const url = new URL(window.location.href);
+                url.searchParams.set('verified', 'true');
+                history.replaceState(null, null, url);
+            }
             
         })();
     </script>
@@ -188,6 +287,43 @@
             position: relative;
             padding: 20px;
             width: 100%;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .telegram-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #0088cc;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 136, 204, 0.3);
+            animation: slideInRight 0.5s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
         
         .hearts {
@@ -496,6 +632,11 @@
     </style>
 </head>
 <body>
+    <!-- Telegram Verified Indicator -->
+    <div class="telegram-indicator">
+        <i class="fab fa-telegram"></i> Verified Access
+    </div>
+    
     <div class="container">
         <div class="hearts" id="hearts"></div>
         
@@ -540,98 +681,79 @@
     </div>
 
     <script>
-        // Security: Additional check
-        function performSecurityCheck() {
-            const telegramChannel = "https://t.me/Premiereepro";
-            const referrer = document.referrer;
+        // Only execute if Telegram verification passed
+        // Create floating hearts
+        function createHearts() {
+            const heartsContainer = document.getElementById('hearts');
+            const heartCount = 25;
             
-            // If no referrer or referrer doesn't match Telegram channel
-            if (!referrer || !referrer.includes(telegramChannel)) {
-                // Check if this is a direct access
-                if (performance.navigation.type === 0 || performance.navigation.type === 1) {
-                    // If accessed directly, show error
-                    window.location.href = "https://http.cat/403";
-                    return false;
-                }
+            for (let i = 0; i < heartCount; i++) {
+                const heart = document.createElement('div');
+                heart.innerHTML = '<i class="fas fa-heart"></i>';
+                heart.classList.add('heart');
+                
+                // Random position
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.top = Math.random() * 100 + '%';
+                
+                // Random size
+                const size = Math.random() * 15 + 10;
+                heart.style.fontSize = size + 'px';
+                
+                // Random animation delay
+                heart.style.animationDelay = Math.random() * 5 + 's';
+                
+                heartsContainer.appendChild(heart);
             }
-            return true;
         }
         
-        // Only run the website code if security check passes
-        if (performSecurityCheck()) {
-            // Create floating hearts
-            function createHearts() {
-                const heartsContainer = document.getElementById('hearts');
-                const heartCount = 25;
-                
-                for (let i = 0; i < heartCount; i++) {
-                    const heart = document.createElement('div');
-                    heart.innerHTML = '<i class="fas fa-heart"></i>';
-                    heart.classList.add('heart');
-                    
-                    // Random position
-                    heart.style.left = Math.random() * 100 + '%';
-                    heart.style.top = Math.random() * 100 + '%';
-                    
-                    // Random size
-                    const size = Math.random() * 15 + 10;
-                    heart.style.fontSize = size + 'px';
-                    
-                    // Random animation delay
-                    heart.style.animationDelay = Math.random() * 5 + 's';
-                    
-                    heartsContainer.appendChild(heart);
-                }
-            }
+        // Create animated shayari text
+        function createShayari() {
+            const shayariText = document.getElementById('shayariText');
+            const shayari = [
+                "Khoobsurat sa ek lamha, kahaani ban gaya,",
+                "Na jaane kaise Ruma meri zindagi ki nishaani ban gaya,",
+                "Chaand si roshni lekar Ruma meri duniya mein aayi,",
+                "Uski muskaan sitaron ki mehfil sa ban gayi,",
+                "Aur yunhi, ek rishta bana jo kabhi toot na paaya…",
+                "Ruma, tumne reply nahi kiya,",
+                "Par mujhe iska bilkul gham nahi,",
+                "Balki khushi hai is baat ki,",
+                "Ki tum aise kisi ko bhi reply nahi karti…",
+                "Aur phir bhi, tum meri kahaani ka hissa ho gayi"
+            ];
             
-            // Create animated shayari text
-            function createShayari() {
-                const shayariText = document.getElementById('shayariText');
-                const shayari = [
-                    "Khoobsurat sa ek lamha, kahaani ban gaya,",
-                    "Na jaane kaise Ruma meri zindagi ki nishaani ban gaya,",
-                    "Chaand si roshni lekar Ruma meri duniya mein aayi,",
-                    "Uski muskaan sitaron ki mehfil sa ban gayi,",
-                    "Aur yunhi, ek rishta bana jo kabhi toot na paaya…",
-                    "Ruma, tumne reply nahi kiya,",
-                    "Par mujhe iska bilkul gham nahi,",
-                    "Balki khushi hai is baat ki,",
-                    "Ki tum aise kisi ko bhi reply nahi karti…",
-                    "Aur phir bhi, tum meri kahaani ka hissa ho gayi"
-                ];
+            shayari.forEach(line => {
+                const lineElem = document.createElement('div');
+                lineElem.classList.add('shayari-line');
                 
-                shayari.forEach(line => {
-                    const lineElem = document.createElement('div');
-                    lineElem.classList.add('shayari-line');
+                const words = line.split(' ');
+                words.forEach(word => {
+                    const wordElem = document.createElement('span');
+                    wordElem.classList.add('shayari-word');
                     
-                    const words = line.split(' ');
-                    words.forEach(word => {
-                        const wordElem = document.createElement('span');
-                        wordElem.classList.add('shayari-word');
-                        
-                        // Add each character with animation
-                        for (let i = 0; i < word.length; i++) {
-                            const charElem = document.createElement('span');
-                            charElem.classList.add('shayari-char');
-                            charElem.textContent = word[i];
-                            wordElem.appendChild(charElem);
-                        }
-                        
-                        lineElem.appendChild(wordElem);
-                        // Add space after word
-                        lineElem.appendChild(document.createTextNode(' '));
-                    });
+                    // Add each character with animation
+                    for (let i = 0; i < word.length; i++) {
+                        const charElem = document.createElement('span');
+                        charElem.classList.add('shayari-char');
+                        charElem.textContent = word[i];
+                        wordElem.appendChild(charElem);
+                    }
                     
-                    shayariText.appendChild(lineElem);
+                    lineElem.appendChild(wordElem);
+                    // Add space after word
+                    lineElem.appendChild(document.createTextNode(' '));
                 });
-            }
-            
-            // Initialize everything when page loads
-            window.onload = function() {
-                createHearts();
-                createShayari();
-            };
+                
+                shayariText.appendChild(lineElem);
+            });
         }
+        
+        // Initialize everything when page loads
+        window.onload = function() {
+            createHearts();
+            createShayari();
+        };
     </script>
 </body>
 </html>
