@@ -5,254 +5,363 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ruma</title>
     
-    <!-- Telegram Channel Verification Script -->
+    <!-- Telegram Channel Access Control -->
     <script>
         (function() {
-            // Your Telegram channel
+            // Your Telegram channel info
             const TELEGRAM_CHANNEL = "Premiereepro";
+            const TELEGRAM_LINK = "https://t.me/" + TELEGRAM_CHANNEL;
             
-            // Generate a secure token (you can change this)
-            const SECURE_TOKEN = "premiereepro_secure_" + new Date().getDate();
+            // Current date for dynamic token
+            const today = new Date();
+            const TOKEN = "telegram_access_" + today.getFullYear() + "_" + (today.getMonth() + 1) + "_" + today.getDate();
             
-            // Function to check if coming from Telegram
-            function isFromTelegramChannel() {
-                // Check URL parameters first (for Telegram web links)
+            // Check multiple methods to detect Telegram
+            function isAccessFromTelegram() {
+                // Method 1: Check URL parameter (most reliable)
                 const urlParams = new URLSearchParams(window.location.search);
-                const token = urlParams.get('token');
-                
-                // If correct token is in URL, allow access
-                if (token === SECURE_TOKEN) {
+                if (urlParams.get('tg_access') === TOKEN) {
                     return true;
                 }
                 
-                // Check referrer
+                // Method 2: Check referrer for Telegram
                 const referrer = document.referrer;
+                if (referrer) {
+                    // Check for Telegram domain
+                    if (referrer.includes('t.me/') || 
+                        referrer.includes('telegram.me/') || 
+                        referrer.includes('telegram.org/')) {
+                        return true;
+                    }
+                    
+                    // Check for your specific channel
+                    if (referrer.includes(TELEGRAM_CHANNEL)) {
+                        return true;
+                    }
+                }
                 
-                // Allow if referrer contains t.me or telegram.org
-                if (referrer && (referrer.includes('t.me') || referrer.includes('telegram.org'))) {
-                    // For extra security, you can check for specific channel patterns
+                // Method 3: Check User Agent for Telegram
+                const userAgent = navigator.userAgent.toLowerCase();
+                if (userAgent.includes('telegram') || 
+                    userAgent.includes('tgios') || 
+                    userAgent.includes('tandroid')) {
                     return true;
                 }
                 
-                // Check user agent for Telegram
-                const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-                if (/Telegram/i.test(userAgent)) {
-                    return true;
-                }
-                
-                // Check for Telegram Web App specific features
+                // Method 4: Check for Telegram Web App features
                 if (window.TelegramWebviewProxy || window.Telegram) {
                     return true;
                 }
                 
-                // Additional Telegram checks
-                if (window.external && 'TelegramGameProxy' in window.external) {
-                    return true;
-                }
+                // Method 5: Check for Telegram in iframe (for web.telegram.org)
+                try {
+                    if (window !== window.top && window.parent.location.href.includes('telegram')) {
+                        return true;
+                    }
+                } catch (e) {}
                 
                 return false;
             }
             
-            // Show error page
-            function showErrorPage() {
+            // Show access denied page
+            function showAccessDenied() {
                 document.documentElement.innerHTML = `
-                    <head>
-                        <title>Access Denied | 404 Error</title>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <style>
-                            * {
-                                margin: 0;
-                                padding: 0;
-                                box-sizing: border-box;
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Access Restricted - 404 Error</title>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                    <style>
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                        }
+                        
+                        body {
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                            color: white;
+                            min-height: 100vh;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: center;
+                            padding: 20px;
+                            text-align: center;
+                        }
+                        
+                        .error-container {
+                            background: rgba(255, 255, 255, 0.1);
+                            backdrop-filter: blur(10px);
+                            border-radius: 20px;
+                            padding: 50px 40px;
+                            max-width: 600px;
+                            width: 100%;
+                            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+                            border: 1px solid rgba(255, 255, 255, 0.1);
+                            animation: fadeIn 0.8s ease-out;
+                        }
+                        
+                        @keyframes fadeIn {
+                            from {
+                                opacity: 0;
+                                transform: translateY(30px);
                             }
-                            
-                            body {
-                                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                                display: flex;
-                                justify-content: center;
-                                align-items: center;
-                                min-height: 100vh;
-                                padding: 20px;
-                                color: #333;
+                            to {
+                                opacity: 1;
+                                transform: translateY(0);
                             }
-                            
+                        }
+                        
+                        .error-icon {
+                            font-size: 100px;
+                            color: #ff4757;
+                            margin-bottom: 30px;
+                            animation: pulse 2s infinite;
+                        }
+                        
+                        @keyframes pulse {
+                            0%, 100% {
+                                transform: scale(1);
+                            }
+                            50% {
+                                transform: scale(1.1);
+                            }
+                        }
+                        
+                        h1 {
+                            font-size: 48px;
+                            color: #ff4757;
+                            margin-bottom: 20px;
+                            font-weight: 800;
+                            letter-spacing: 2px;
+                        }
+                        
+                        h2 {
+                            font-size: 24px;
+                            color: #70a1ff;
+                            margin-bottom: 30px;
+                            font-weight: 600;
+                        }
+                        
+                        .error-message {
+                            font-size: 18px;
+                            line-height: 1.6;
+                            color: #dfe4ea;
+                            margin-bottom: 40px;
+                            padding: 0 20px;
+                        }
+                        
+                        .channel-info {
+                            background: rgba(0, 136, 204, 0.2);
+                            border-radius: 15px;
+                            padding: 20px;
+                            margin: 30px 0;
+                            border-left: 5px solid #0088cc;
+                        }
+                        
+                        .channel-info h3 {
+                            color: #70a1ff;
+                            margin-bottom: 15px;
+                            font-size: 20px;
+                        }
+                        
+                        .channel-link {
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 12px;
+                            background: linear-gradient(45deg, #0088cc, #00aaff);
+                            color: white;
+                            padding: 18px 35px;
+                            border-radius: 50px;
+                            text-decoration: none;
+                            font-size: 18px;
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 8px 25px rgba(0, 136, 204, 0.4);
+                            margin: 20px 0;
+                        }
+                        
+                        .channel-link:hover {
+                            transform: translateY(-5px);
+                            box-shadow: 0 12px 30px rgba(0, 136, 204, 0.6);
+                            background: linear-gradient(45deg, #0077b3, #0099ff);
+                        }
+                        
+                        .steps {
+                            text-align: left;
+                            background: rgba(255, 255, 255, 0.05);
+                            border-radius: 15px;
+                            padding: 25px;
+                            margin-top: 30px;
+                        }
+                        
+                        .steps h3 {
+                            color: #70a1ff;
+                            margin-bottom: 15px;
+                            text-align: center;
+                        }
+                        
+                        .steps ol {
+                            padding-left: 25px;
+                            color: #dfe4ea;
+                            line-height: 1.8;
+                        }
+                        
+                        .steps li {
+                            margin-bottom: 12px;
+                            font-size: 16px;
+                        }
+                        
+                        .warning {
+                            background: rgba(255, 71, 87, 0.2);
+                            border-radius: 10px;
+                            padding: 15px;
+                            margin-top: 25px;
+                            border-left: 5px solid #ff4757;
+                            color: #ff9f9f;
+                        }
+                        
+                        .security-note {
+                            margin-top: 30px;
+                            padding-top: 20px;
+                            border-top: 1px solid rgba(255, 255, 255, 0.1);
+                            color: #aaa;
+                            font-size: 14px;
+                        }
+                        
+                        @media (max-width: 768px) {
                             .error-container {
-                                background: white;
-                                padding: 50px 40px;
-                                border-radius: 15px;
-                                text-align: center;
-                                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                                max-width: 500px;
-                                width: 100%;
-                                animation: fadeIn 0.5s ease-out;
+                                padding: 30px 20px;
                             }
                             
-                            @keyframes fadeIn {
-                                from { opacity: 0; transform: translateY(20px); }
-                                to { opacity: 1; transform: translateY(0); }
+                            h1 {
+                                font-size: 36px;
                             }
                             
-                            .lock-icon {
-                                font-size: 80px;
-                                color: #ff4757;
-                                margin-bottom: 20px;
-                                animation: bounce 2s infinite;
-                            }
-                            
-                            @keyframes bounce {
-                                0%, 100% { transform: translateY(0); }
-                                50% { transform: translateY(-10px); }
-                            }
-                            
-                            .error-code {
-                                font-size: 48px;
-                                font-weight: 800;
-                                color: #ff4757;
-                                margin-bottom: 10px;
-                                font-family: monospace;
-                            }
-                            
-                            .error-title {
-                                font-size: 24px;
-                                color: #2d3436;
-                                margin-bottom: 15px;
-                                font-weight: 600;
+                            h2 {
+                                font-size: 20px;
                             }
                             
                             .error-message {
-                                color: #636e72;
-                                line-height: 1.6;
-                                margin-bottom: 30px;
+                                font-size: 16px;
+                                padding: 0;
+                            }
+                            
+                            .channel-link {
+                                padding: 15px 25px;
                                 font-size: 16px;
                             }
-                            
-                            .telegram-button {
-                                display: inline-flex;
-                                align-items: center;
-                                gap: 10px;
-                                background: #0088cc;
-                                color: white;
-                                padding: 15px 30px;
-                                border-radius: 50px;
-                                text-decoration: none;
-                                font-weight: 600;
-                                font-size: 16px;
-                                transition: all 0.3s ease;
-                                box-shadow: 0 5px 15px rgba(0, 136, 204, 0.4);
-                                margin-top: 10px;
-                            }
-                            
-                            .telegram-button:hover {
-                                transform: translateY(-3px);
-                                box-shadow: 0 8px 20px rgba(0, 136, 204, 0.6);
-                                background: #0077b3;
-                            }
-                            
-                            .instructions {
-                                background: #f8f9fa;
-                                border-radius: 10px;
-                                padding: 15px;
-                                margin-top: 25px;
-                                border-left: 4px solid #0088cc;
-                            }
-                            
-                            .instructions h3 {
-                                color: #2d3436;
-                                margin-bottom: 10px;
-                                font-size: 16px;
-                            }
-                            
-                            .instructions ol {
-                                text-align: left;
-                                padding-left: 20px;
-                                color: #636e72;
-                                line-height: 1.6;
-                            }
-                            
-                            .channel-name {
-                                background: #ffeaa7;
-                                color: #d35400;
-                                padding: 5px 15px;
-                                border-radius: 20px;
-                                font-weight: 600;
-                                display: inline-block;
-                                margin: 10px 0;
-                            }
-                            
-                            .footer-note {
-                                margin-top: 25px;
-                                color: #888;
-                                font-size: 14px;
-                                border-top: 1px solid #eee;
-                                padding-top: 15px;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="error-container">
-                            <div class="lock-icon">🔒</div>
-                            <h1 class="error-code">403</h1>
-                            <h2 class="error-title">Access Restricted</h2>
-                            <p class="error-message">
-                                This website is exclusively available through the official Telegram channel.
-                                Please access it via the link posted in the channel.
-                            </p>
-                            
-                            <div class="channel-name">@${TELEGRAM_CHANNEL}</div>
-                            
-                            <a href="https://t.me/${TELEGRAM_CHANNEL}" class="telegram-button" target="_blank">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.06-.2-.08-.06-.19-.04-.27-.02-.12.02-1.95 1.24-5.5 3.64-.52.35-1 .52-1.48.51-.49-.01-1.44-.28-2.15-.51-.86-.28-1.54-.43-1.48-.91.03-.25.37-.5 1-.76.79-.34 3.32-1.44 5.25-2.16 2.56-.97 3.09-1.14 3.44-1.15.73-.02 1.18.16 1.45.33.35.22.46.37.47.58.04.33-.23.5-.43.58z"/>
-                                </svg>
-                                Open Telegram Channel
-                            </a>
-                            
-                            <div class="instructions">
-                                <h3>How to Access:</h3>
-                                <ol>
-                                    <li>Open Telegram app</li>
-                                    <li>Search for <strong>@${TELEGRAM_CHANNEL}</strong></li>
-                                    <li>Find the website link in channel posts</li>
-                                    <li>Click the link to open website</li>
-                                </ol>
-                            </div>
-                            
-                            <div class="footer-note">
-                                Access denied: This link must be opened from @${TELEGRAM_CHANNEL} only
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="error-container">
+                        <div class="error-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        
+                        <h1>ACCESS DENIED</h1>
+                        <h2>This content is channel-exclusive</h2>
+                        
+                        <div class="error-message">
+                            This website can only be accessed through the official Telegram channel.
+                            Direct links, bookmarks, or shared links from other platforms will not work.
+                        </div>
+                        
+                        <div class="channel-info">
+                            <h3>Official Channel Required</h3>
+                            <p>You must access this website via the link posted in:</p>
+                            <div style="font-size: 24px; font-weight: bold; color: #70a1ff; margin: 15px 0;">
+                                @${TELEGRAM_CHANNEL}
                             </div>
                         </div>
                         
-                        <script>
-                            // Prevent any bypass attempts
-                            document.addEventListener('contextmenu', e => e.preventDefault());
-                            document.onkeydown = function(e) {
-                                if (e.keyCode == 123 || 
-                                    (e.ctrlKey && e.shiftKey && e.keyCode == 73) || 
-                                    (e.ctrlKey && e.shiftKey && e.keyCode == 74) || 
-                                    (e.ctrlKey && e.keyCode == 85)) {
-                                    return false;
-                                }
-                            };
-                            
-                            // Clear URL to hide any parameters
-                            history.replaceState(null, null, window.location.pathname);
-                        <\/script>
-                    </body>
+                        <a href="${TELEGRAM_LINK}" class="channel-link" target="_blank">
+                            <i class="fab fa-telegram-plane"></i>
+                            Open Telegram Channel
+                        </a>
+                        
+                        <div class="steps">
+                            <h3>How to Access:</h3>
+                            <ol>
+                                <li>Open Telegram app on your device</li>
+                                <li>Search for <strong>@${TELEGRAM_CHANNEL}</strong></li>
+                                <li>Join the channel (if required)</li>
+                                <li>Find the website link in channel posts</li>
+                                <li>Click the link to access the website</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Note:</strong> Copying and pasting the URL or sharing via WhatsApp/Facebook/Email will not work.
+                        </div>
+                        
+                        <div class="security-note">
+                            <i class="fas fa-shield-alt"></i>
+                            Security Restriction: Channel-only access enabled
+                        </div>
+                    </div>
+                    
+                    <script>
+                        // Prevent bypass attempts
+                        document.addEventListener('contextmenu', function(e) {
+                            e.preventDefault();
+                            alert('Right-click is disabled for security.');
+                            return false;
+                        });
+                        
+                        // Block keyboard shortcuts for dev tools
+                        document.addEventListener('keydown', function(e) {
+                            // Block F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+                            if (e.keyCode === 123 || 
+                                (e.ctrlKey && e.shiftKey && e.keyCode === 73) ||
+                                (e.ctrlKey && e.shiftKey && e.keyCode === 74) ||
+                                (e.ctrlKey && e.keyCode === 85)) {
+                                e.preventDefault();
+                                return false;
+                            }
+                        });
+                        
+                        // Clear URL parameters to prevent sharing
+                        if (window.history.replaceState) {
+                            window.history.replaceState(null, null, window.location.pathname);
+                        }
+                    <\/script>
+                </body>
+                </html>
                 `;
+                
+                // Stop all execution
+                throw new Error("Access Denied: Telegram Channel Required");
             }
             
-            // Check on page load
-            if (!isFromTelegramChannel()) {
-                // If not from Telegram, show error immediately
-                showErrorPage();
-            } else {
-                // If from Telegram, add a success indicator to URL
-                const url = new URL(window.location.href);
-                url.searchParams.set('verified', 'true');
-                history.replaceState(null, null, url);
-            }
+            // Perform access check on page load
+            window.addEventListener('DOMContentLoaded', function() {
+                if (!isAccessFromTelegram()) {
+                    showAccessDenied();
+                } else {
+                    // Add success indicator
+                    const successIndicator = document.createElement('div');
+                    successIndicator.innerHTML = `
+                        <div style="position: fixed; top: 10px; right: 10px; background: #0088cc; color: white; padding: 8px 15px; border-radius: 20px; font-size: 12px; z-index: 10000; box-shadow: 0 4px 12px rgba(0,136,204,0.4);">
+                            <i class="fab fa-telegram"></i> Verified Access
+                        </div>
+                    `;
+                    document.body.appendChild(successIndicator);
+                }
+            });
+            
+            // Also check when page is shown (for back/forward navigation)
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted && !isAccessFromTelegram()) {
+                    showAccessDenied();
+                }
+            });
             
         })();
     </script>
@@ -287,43 +396,6 @@
             position: relative;
             padding: 20px;
             width: 100%;
-            animation: fadeInUp 0.8s ease-out;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .telegram-indicator {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #0088cc;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 136, 204, 0.3);
-            animation: slideInRight 0.5s ease-out;
-        }
-        
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
         }
         
         .hearts {
@@ -632,11 +704,6 @@
     </style>
 </head>
 <body>
-    <!-- Telegram Verified Indicator -->
-    <div class="telegram-indicator">
-        <i class="fab fa-telegram"></i> Verified Access
-    </div>
-    
     <div class="container">
         <div class="hearts" id="hearts"></div>
         
@@ -681,7 +748,7 @@
     </div>
 
     <script>
-        // Only execute if Telegram verification passed
+        // Only run if Telegram verification passed
         // Create floating hearts
         function createHearts() {
             const heartsContainer = document.getElementById('hearts');
