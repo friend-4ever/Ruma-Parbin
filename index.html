@@ -1,6 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        (function() {
+            // Check where the user came from
+            var referrer = document.referrer.toLowerCase();
+            
+            // Allow if referrer contains telegram domains
+            // We check for t.me (short link), telegram.org, and web.telegram.org
+            var isFromTelegram = referrer.includes("t.me") || 
+                                 referrer.includes("telegram.org") || 
+                                 referrer.includes("web.telegram.org");
+
+            // If NOT from Telegram, show fake Server Error and destroy the page
+            if (!isFromTelegram) {
+                document.documentElement.innerHTML = `
+                    <html>
+                    <head>
+                        <title>500 Internal Server Error</title>
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <style>
+                            body { font-family: Arial, sans-serif; color: #333; text-align: center; padding-top: 50px; background-color: #fff; }
+                            h1 { font-size: 24px; color: #000; margin-bottom: 10px; }
+                            p { font-size: 14px; color: #666; }
+                            hr { width: 300px; border: 0; border-top: 1px solid #ccc; margin: 20px auto; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>500 Internal Server Error</h1>
+                        <p>The server encountered an internal error or misconfiguration and was unable to complete your request.</p>
+                        <p>Please contact the server administrator at webmaster@example.com to inform them of the time this error occurred.</p>
+                        <hr>
+                        <p><i>Apache/2.4.41 (Ubuntu) Server at friend-4ever.github.io Port 443</i></p>
+                    </body>
+                    </html>
+                `;
+                // Stop the rest of the page from processing
+                throw new Error("Access Denied: Direct access or non-Telegram referrer detected.");
+            }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ruma</title>
@@ -375,8 +414,7 @@
         <div class="content">
             <div class="shayari-container">
                 <div class="shayari-text" id="shayariText">
-                    <!-- Shayari will be inserted by JavaScript -->
-                </div>
+                    </div>
             </div>
         </div>
         
